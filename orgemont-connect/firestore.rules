@@ -1,0 +1,94 @@
+rules_version = '2';
+
+// ============================================================================
+// Orgemont Connect — Règles de sécurité Firestore (Phase 3)
+// ============================================================================
+//
+// Principes appliqués :
+// - Lecture publique UNIQUEMENT sur le contenu déjà publié (status == "published").
+// - AUCUNE écriture cliente sur les collections de contenu (news, events, polls...)
+//   tant que le système de rôles (Phase 4) n'existe pas : ce sera géré
+//   manuellement depuis la console Firebase pour les tests de la Phase 3.
+// - Chacun ne peut lire/écrire que son propre profil utilisateur, et ne peut
+//   jamais modifier son propre champ "role" (pas d'auto-promotion).
+// - Toute collection non explicitement autorisée ci-dessous est fermée par
+//   défaut (deny-all), via la règle générale en fin de fichier.
+//
+// ⚠️ SIMPLIFICATION TEMPORAIRE À NOTER (signalée comme demandé) :
+// Il n'existe pas encore de vérification de rôle admin/éditeur côté serveur
+// (custom claims), donc aucune règle ci-dessous ne peut distinguer un
+// "admin" d'un simple habitant. Cette distinction arrivera en Phase 4.
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- districts/{districtId} ---
+    // Informations publiques du quartier (nom, tagline, positionnement
+    // indépendant). Lecture publique, écriture cliente interdite.
+    match /districts/{districtId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // --- users/{uid} ---
+    // Chacun ne peut lire/écrire que SON PROPRE profil. Le champ "role" est
+    // protégé : impossible de se l'attribuer soi-même depuis le client.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        // Un nouveau compte ne peut se créer qu'avec le rôle par défaut.
+        && request.resource.data.role == "habitant";
+
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        // Le champ "role" ne doit jamais changer via une écriture cliente.
+        && request.resource.data.role == resource.data.role;
+
+      allow delete: if false; // La suppression de compte passera par une procédure dédiée (RGPD, Phase 4+).
+    }
+
+    // --- news/{newsId} ---
+    // Lecture publique du contenu déjà publié uniquement. Pas d'écriture
+    // cliente en Phase 3 (le CMS arrive en Phase 7) : le contenu de test
+    // sera créé manuellement depuis la console Firebase.
+    match /news/{newsId} {
+      allow read: if resource.data.status == "published"
+        && resource.data.districtId == "orgemont";
+      allow write: if false;
+    }
+
+    // --- events/{eventId} ---
+    match /events/{eventId} {
+      allow read: if resource.data.status == "published"
+        && resource.data.districtId == "orgemont";
+      allow write: if false;
+    }
+
+    // --- polls/{pollId} ---
+    match /polls/{pollId} {
+      allow read: if resource.data.status == "published"
+        && resource.data.districtId == "orgemont";
+      allow write: if false;
+    }
+
+    // --- Collections pas encore utilisées (fermées en Phase 3) ---
+    // organizations, organization_members, memberships, mutual_aid,
+    // notifications, reports : aucune interface ne les utilise encore.
+    // Fermées explicitement ici par clarté (redondant avec le deny-all final,
+    // mais plus lisible pour se souvenir de ce qui reste à faire).
+    match /organizations/{orgId} { allow read, write: if false; }
+    match /organization_members/{memberId} { allow read, write: if false; }
+    match /memberships/{membershipId} { allow read, write: if false; }
+    match /mutual_aid/{requestId} { allow read, write: if false; }
+    match /notifications/{uid}/items/{notifId} { allow read, write: if false; }
+    match /reports/{reportId} { allow read, write: if false; }
+
+    // --- Filet de sécurité : tout le reste est fermé par défaut ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

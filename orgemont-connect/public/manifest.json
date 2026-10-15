@@ -1,0 +1,26 @@
+{
+  "name": "Orgemont Connect",
+  "short_name": "Orgemont",
+  "description": "Orgemont Connect — application indépendante du quartier d'Orgemont (Épinay-sur-Seine). Projet personnel, non officiel.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF8F2",
+  "theme_color": "#FBF8F2",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icons/icon-any-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

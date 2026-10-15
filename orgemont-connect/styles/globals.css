@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Variables CSS du design system "Le Marché d'Orgemont".
+  Dupliquées ici (en plus de tailwind.config.ts) uniquement pour les cas où
+  une valeur brute est nécessaire hors classes Tailwind (ex. meta theme-color,
+  dégradés ponctuels). La source de vérité pour les classes utilitaires reste
+  tailwind.config.ts.
+*/
+:root {
+  --color-primary: #b54834;
+  --color-accent: #e3a23b;
+  --color-background: #fbf8f2;
+  --color-surface: #ffffff;
+  --color-ink: #2a2118;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus clavier visible partout (accessibilité), en plus des classes focus-visible ciblées */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Respecte les préférences de réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
